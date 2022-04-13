@@ -1,0 +1,10 @@
+metadata:
+ name: baseClusterName
+
+showDefaultWorkerGroup : true
+
+workers:
+  default:
+    type: m5.xlarge
+    maximum: 6
+    minimum: 3
