@@ -1,0 +1,88 @@
+kind: Shoot
+apiVersion: core.gardener.cloud/v1beta1
+metadata:
+  name: baseClusterName
+  annotations:
+    dashboard.garden.sapcloud.io/no-hibernation-schedule: 'true'
+    garden.sapcloud.io/createdBy: service.user@sap.com
+    garden.sapcloud.io/purpose: evaluation
+    gardener.cloud/created-by: service.user@sap.com
+spec:
+  addons:
+    kubernetesDashboard:
+      enabled: true
+      authenticationMode: token
+    nginxIngress:
+      enabled: true
+      externalTrafficPolicy: Cluster
+  cloudProfileName: aws
+  extensions:
+    - type: shoot-dns-service
+  kubernetes:
+    allowPrivilegedContainers: true
+    kubeAPIServer:
+      enableBasicAuthentication: false
+    kubeControllerManager:
+      nodeCIDRMaskSize: 24
+    kubeProxy:
+      mode: IPTables
+    version: "1.22"
+  networking:
+    type: calico
+    pods: 10.96.0.0/11
+    nodes: 10.250.0.0/16
+    services: 10.64.0.0/13
+  maintenance:
+    autoUpdate:
+      kubernetesVersion: true
+      machineImageVersion: true
+    timeWindow:
+      begin: 200000+0000
+      end: 210000+0000
+  provider:
+    type: aws
+    controlPlaneConfig:
+      apiVersion: aws.provider.extensions.gardener.cloud/v1alpha1
+      kind: ControlPlaneConfig
+    infrastructureConfig:
+      apiVersion: aws.provider.extensions.gardener.cloud/v1alpha1
+      kind: InfrastructureConfig
+      networks:
+        vpc:
+          cidr: 10.250.0.0/16
+        zones:
+          - name: eu-central-1a
+            workers: 10.250.0.0/26
+            public: 10.250.96.0/26
+            internal: 10.250.112.0/26
+          - name: eu-central-1b
+            workers: 10.250.0.64/26
+            public: 10.250.96.64/26
+            internal: 10.250.112.64/26
+          - name: eu-central-1c
+            workers: 10.250.0.128/26
+            public: 10.250.96.128/26
+            internal: 10.250.112.128/26
+    workers:
+    {{- if .Values.showDefaultWorkerGroup }}
+      - name: default
+        machine:
+          type: { .Values.workers.default.type }
+          image:
+            name: gardenlinux
+        maximum: { .Values.workers.default.maximum }
+        minimum: { .Values.workers.default.minimum }
+        maxSurge: 1
+        maxUnavailable: 0
+        volume:
+          type: gp2
+          size: 50Gi
+          encrypted: true
+        zones:
+          - eu-central-1a
+          - eu-central-1b
+          - eu-central-1c
+    {{- end }}
+  purpose: evaluation
+  region: eu-central-1
+  secretBindingName: my-aws-secret
