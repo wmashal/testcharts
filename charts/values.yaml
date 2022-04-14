@@ -1,10 +1,21 @@
 metadata:
  name: baseClusterName
 
-showDefaultWorkerGroup : true
+addDefaultWorkerGroup : true
+addRMWorkerGroup : true
+addRMControllersWorkerGroup : true
+
 
 workers:
   default:
     type: m5.xlarge
     maximum: 6
+    minimum: 3
+  rm:
+    type: c5.2xlarge
+    maximum: 6
+    minimum: 3
+  rm-controllers:
+    type: c5.xlarge
+    maximum: 3
     minimum: 3
