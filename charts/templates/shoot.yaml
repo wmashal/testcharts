@@ -64,7 +64,6 @@ spec:
             public: 10.250.96.128/26
             internal: 10.250.112.128/26
     workers:
-    {{- if .Values.showDefaultWorkerGroup }}
       - name: default
         machine:
           type: { .Values.workers.default.type }
@@ -82,7 +81,60 @@ spec:
           - eu-central-1a
           - eu-central-1b
           - eu-central-1c
-    {{- end }}
+    {{- if .Values.addRMWorkerGroup }}
+      - name: rm
+        machine:
+          type: { .Values.workers.rm.type }
+          image:
+            name: gardenlinux
+        systemComponents:
+          allow: false
+        maximum: { .Values.workers.rm.maximum }
+        minimum: { .Values.workers.rm.minimum }
+        maxSurge: 3
+        maxUnavailable: 0
+        taints:
+          - key: WorkGroup
+            value: rm
+            effect: NoExecute
+          - key: WorkGroup
+            value: rm
+            effect: NoSchedule
+        volume:
+          type: gp2
+          size: 50Gi
+        zones:
+          - eu-central-1a
+          - eu-central-1b
+          - eu-central-1c
+       {{- end }}
+      {{- if .Values.addRMControllersWorkerGroup }}
+      - name: rm-controllers
+        machine:
+          type: c5.xlarge
+          image:
+            name: gardenlinux
+        systemComponents:
+          allow: false
+        maximum: 3
+        minimum: 3
+        maxSurge: 1
+        maxUnavailable: 0
+        taints:
+          - key: WorkGroup
+            value: rm-controllers
+            effect: NoExecute
+          - key: WorkGroup
+            value: rm-controllers
+            effect: NoSchedule
+        volume:
+          type: gp2
+          size: 50Gi
+        zones:
+          - eu-central-1a
+          - eu-central-1b
+          - eu-central-1c
+        {{- end }}
   purpose: evaluation
   region: eu-central-1
   secretBindingName: my-aws-secret
